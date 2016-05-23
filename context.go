@@ -90,3 +90,19 @@ func (c *Context) UnmarshalBody(v interface{}) *Error {
 func (c *Context) Var(name string) string {
 	return mux.Vars(c.r)[name]
 }
+
+func (c *Context) WriteJSON(v interface{}) *Error {
+	data, err := json.Marshal(v)
+
+	if err != nil {
+		return ServerError(err)
+	}
+
+	_, err = c.w.Write(data)
+
+	if err != nil {
+		return ServerError(err)
+	}
+
+	return nil
+}
