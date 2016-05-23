@@ -7,9 +7,11 @@ import (
 	"path/filepath"
 )
 
-var Templates = map[string]*template.Template{}
+var (
+	Templates = map[string]*template.Template{}
+)
 
-func LoadTemplates(dir string) error {
+func LoadTemplates(dir string, helpers map[string]interface{}) error {
 	return filepath.Walk(dir, func(path string, info os.FileInfo, err error) error {
 		if !info.IsDir() {
 			files := []string{}
@@ -18,7 +20,7 @@ func LoadTemplates(dir string) error {
 			files = appendIfExists(files, filepath.Join(filepath.Dir(path), "layout.tmpl"))
 			files = append(files, path)
 
-			t, err := template.ParseFiles(files...)
+			t, err := template.New("main").Funcs(helpers).ParseFiles(files...)
 
 			if err != nil {
 				return err
