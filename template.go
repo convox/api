@@ -12,7 +12,13 @@ var Templates = map[string]*template.Template{}
 func LoadTemplates(dir string) error {
 	return filepath.Walk(dir, func(path string, info os.FileInfo, err error) error {
 		if !info.IsDir() {
-			t, err := template.ParseFiles(path)
+			files := []string{}
+
+			files = appendIfExists(files, filepath.Join(dir, "layout.tmpl"))
+			files = appendIfExists(files, filepath.Join(filepath.Dir(path), "layout.tmpl"))
+			files = append(files, path)
+
+			t, err := template.ParseFiles(files...)
 
 			if err != nil {
 				return err
@@ -43,4 +49,12 @@ func RenderTemplate(w http.ResponseWriter, path string, params interface{}) *Err
 	}
 
 	return nil
+}
+
+func appendIfExists(files []string, path string) []string {
+	if _, err := os.Stat(path); !os.IsNotExist(err) {
+		files = append(files, path)
+	}
+
+	return files
 }
