@@ -27,6 +27,12 @@ func (r *Router) HandleApi(method, path string, fn HandlerFunc) {
 	r.HandleFunc(path, apiHandler(fn, log)).Methods(method)
 }
 
+func (r *Router) HandleRedirect(method, path, to string) {
+	r.HandleFunc(path, func(w http.ResponseWriter, r *http.Request) {
+		http.Redirect(w, r, to, 302)
+	}).Methods(method)
+}
+
 func (r *Router) HandleText(method, path, text string) {
 	r.HandleFunc(path, textHandler(text)).Methods(method)
 }
