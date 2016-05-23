@@ -1,6 +1,7 @@
 package api
 
 import (
+	"fmt"
 	"net/http"
 
 	"github.com/convox/logger"
@@ -25,6 +26,11 @@ func (r *Router) HandleApi(method, path string, fn HandlerFunc) {
 	log := r.log.Namespace("method=%q path=%q", method, path)
 
 	r.HandleFunc(path, apiHandler(fn, log)).Methods(method)
+}
+
+func (r *Router) HandleAssets(path, dir string) {
+	p := fmt.Sprintf("%s/", path)
+	r.PathPrefix(p).Handler(http.StripPrefix(p, http.FileServer(http.Dir(dir))))
 }
 
 func (r *Router) HandleRedirect(method, path, to string) {
