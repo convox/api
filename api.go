@@ -10,7 +10,8 @@
 //       api.RollbarToken = os.Getenv("ROLLBAR_TOKEN")
 //
 //       router := api.NewRouter()
-//       router.HandleText("GET", "/", "ok")
+//       router.HandleRedirect("GET", "/", "/users/1")
+//       router.HandleText("GET", "/check", "ok")
 //       router.HandleApi("GET", "/user/{id}", getUser)
 //       router.HandleApi("POST", "/webhook", postWebhook)
 //
@@ -29,9 +30,9 @@
 //
 //       // api error type that includes response code
 //       if err != nil {
-//           return api.NewError(503, err)
+//           return api.ServerError(err)
 //       } else if user == nil {
-//           return api.NewErrorf(404, "user not found: %s", id)
+//           return api.Errorf(404, "user not found: %s", id)
 //       }
 //
 //       // built-in logging
