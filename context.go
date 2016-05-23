@@ -39,6 +39,12 @@ func (c *Context) Body() ([]byte, *Error) {
 	return data, nil
 }
 
+func (c *Context) Form(name string) string {
+	c.r.ParseMultipartForm(2048)
+
+	return c.r.FormValue(name)
+}
+
 // Output a line to the logs.
 //   c.Logf("count=%d success=%t", 10, true)
 //   => count=10 success=true
