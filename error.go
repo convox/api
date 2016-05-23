@@ -24,8 +24,16 @@ func NewError(code int, err error) *Error {
 	}
 }
 
-func NewErrorf(code int, format string, a ...interface{}) *Error {
+func Errorf(code int, format string, a ...interface{}) *Error {
 	return NewError(code, fmt.Errorf(format, a))
+}
+
+func ServerError(err error) *Error {
+	return NewError(503, err)
+}
+
+func ServerErrorf(format string, a ...interface{}) *Error {
+	return ServerError(fmt.Errorf(format, a...))
 }
 
 func (e *Error) Code() int {

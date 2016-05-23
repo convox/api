@@ -33,7 +33,7 @@ func (c *Context) Body() ([]byte, *Error) {
 	data, err := ioutil.ReadAll(c.r.Body)
 
 	if err != nil {
-		return nil, NewErrorf(403, "could not read request body")
+		return nil, Errorf(403, "could not read request body")
 	}
 
 	return data, nil
@@ -70,13 +70,13 @@ func (c *Context) UnmarshalBody(v interface{}) *Error {
 	switch c.r.Header.Get("Content-Type") {
 	case "application/json":
 		if err := json.Unmarshal(data, v); err != nil {
-			return NewErrorf(403, "invalid json")
+			return Errorf(403, "invalid json")
 		}
 
 		return nil
 	}
 
-	return NewErrorf(403, "invalid request type")
+	return Errorf(403, "invalid request type")
 }
 
 // Get a variable from the request path.

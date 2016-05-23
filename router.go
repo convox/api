@@ -42,6 +42,8 @@ func apiHandler(fn HandlerFunc, log *logger.Logger) http.HandlerFunc {
 				err.Record()
 			}
 
+			log.Logf("error=%q", err.Error())
+
 			http.Error(w, err.Error(), err.Code())
 		}
 	}
