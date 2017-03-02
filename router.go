@@ -4,28 +4,38 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/convox/logger"
 	"github.com/gorilla/mux"
+	"github.com/urfave/negroni"
 )
 
-type HandlerFunc func(w http.ResponseWriter, r *http.Request, c Context) *Error
+type HandlerFunc http.HandlerFunc
+
+// type HandlerFunc func(w http.ResponseWriter, r *http.Request, c Context) *Error
+
+type Middleware negroni.HandlerFunc
+
+// type Middleware func(w http.ResponseWriter, r *http.Request, next HandlerFunc)
+
+type Route struct {
+	*mux.Route
+}
 
 type Router struct {
 	*mux.Router
-	log *Logger
+	log     *Logger
+	handler *negroni.Negroni
 }
 
 func NewRouter() *Router {
-	return &Router{
-		Router: mux.NewRouter(),
-		log:    NewLogger(),
-	}
+	return newRouterRoute(mux.NewRouter())
 }
 
-func (r *Router) HandleApi(method, path string, fn HandlerFunc) {
-	log := r.log.Namespace("method=%q path=%q", method, path)
-
-	r.HandleFunc(path, apiHandler(fn, log)).Methods(method)
+func newRouterRoute(router *mux.Router) *Router {
+	return &Router{
+		Router:  router,
+		log:     NewLogger(),
+		handler: negroni.New(),
+	}
 }
 
 func (r *Router) HandleAssets(path, dir string) {
@@ -39,29 +49,52 @@ func (r *Router) HandleRedirect(method, path, to string) {
 	}).Methods(method)
 }
 
+// func (rt *Router) HandleFunc(path string, fn HandlerFunc) *Route {
+//   return &Route{
+//     Route: rt.Router.HandleFunc(path, func(w http.ResponseWriter, r *http.Request) {
+//       for i := 0; i < len(rt.middleware)-1; i++ {
+//         rt.middleware(w, r, rt.middleware[i+1])
+//       }
+//       last := fn
+//       for i := len(rt.middleware) - 1; i >= 0; i-- {
+//         rt.middleware[i](w, r, last)
+//         last = rt.middleware[i]
+//       }
+//       fmt.Printf("stack = %+v\n", stack)
+//       fmt.Println("fn")
+//       fmt.Printf("rt = %+v\n", rt)
+//       fmt.Printf("w = %+v\n", w)
+//       fmt.Printf("r = %+v\n", r)
+//       stack(w, r)
+//     }),
+//   }
+// }
+
 func (r *Router) HandleText(method, path, text string) {
 	r.HandleFunc(path, textHandler(text)).Methods(method)
 }
 
-func apiHandler(fn HandlerFunc, log *logger.Logger) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		c := NewContext(w, r, log)
-
-		defer r.Body.Close()
-
-		if err := fn(w, r, c); err != nil {
-			if err.Server() {
-				err.Record()
-			}
-
-			log.Logf("error=%q", err.Error())
-
-			http.Error(w, err.Error(), err.Code())
-		}
-	}
+func (rt *Router) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	fmt.Println("ServeHTTP")
+	fmt.Printf("rt = %+v\n", rt)
+	fmt.Printf("rt.handler = %+v\n", rt.handler)
+	rt.handler.UseHandler(rt.Router)
+	rt.handler.ServeHTTP(w, r)
 }
 
-func textHandler(s string) http.HandlerFunc {
+func (rt *Router) Subrouter() *Router {
+	return newRouterRoute(rt.Router.PathPrefix("/").Subrouter())
+}
+
+func (rt *Router) Use(m Middleware) {
+	rt.handler.UseFunc(m)
+}
+
+func (rt *Router) UseHandlerFunc(fn HandlerFunc) {
+	rt.handler.UseHandlerFunc(fn)
+}
+
+func textHandler(s string) HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte(s))
 	}
