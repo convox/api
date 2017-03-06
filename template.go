@@ -40,7 +40,7 @@ func LoadTemplates(dir string, helpers map[string]interface{}) error {
 	})
 }
 
-func RenderTemplate(w http.ResponseWriter, path string, params interface{}) *Error {
+func RenderTemplate(w http.ResponseWriter, path string, params interface{}) error {
 	t, ok := Templates[path]
 
 	if !ok {
