@@ -14,6 +14,10 @@ var (
 
 func LoadTemplates(dir string, helpers map[string]interface{}) error {
 	return filepath.Walk(dir, func(path string, info os.FileInfo, err error) error {
+		if err != nil {
+			return err
+		}
+
 		if !info.IsDir() {
 			files := []string{}
 
