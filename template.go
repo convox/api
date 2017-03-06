@@ -1,6 +1,7 @@
 package api
 
 import (
+	"fmt"
 	"html/template"
 	"net/http"
 	"os"
@@ -43,11 +44,11 @@ func RenderTemplate(w http.ResponseWriter, path string, params interface{}) *Err
 	t, ok := Templates[path]
 
 	if !ok {
-		return ServerErrorf("no such template: %s", path)
+		return fmt.Errorf("no such template: %s", path)
 	}
 
 	if err := t.Execute(w, params); err != nil {
-		return ServerError(err)
+		return err
 	}
 
 	return nil
