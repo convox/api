@@ -18,23 +18,28 @@ type Server struct {
 func (s *Server) Listen(proto, addr string) error {
 	s.Logger.At("listen").Logf("hostname=%q addr=%q", s.Hostname, addr)
 
-	l, err := net.Listen(proto, addr)
+	l, err := net.Listen("tcp", addr)
 	if err != nil {
 		return err
 	}
 
-	config := &tls.Config{
-		NextProtos: []string{"h2"},
+	switch proto {
+	case "http2", "h2", "tcp":
+		config := &tls.Config{
+			NextProtos: []string{"h2"},
+		}
+
+		cert, err := generateSelfSignedCertificate(s.Hostname)
+		if err != nil {
+			return err
+		}
+
+		config.Certificates = append(config.Certificates, cert)
+
+		l = tls.NewListener(l, config)
 	}
 
-	cert, err := generateSelfSignedCertificate(s.Hostname)
-	if err != nil {
-		return err
-	}
-
-	config.Certificates = append(config.Certificates, cert)
-
-	return http.Serve(tls.NewListener(l, config), s)
+	return http.Serve(l, s)
 }
 
 func (s *Server) Route(name, method, path string, fn HandlerFunc) {

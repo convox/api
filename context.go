@@ -80,6 +80,11 @@ func (c *Context) RenderJSON(v interface{}) error {
 	return nil
 }
 
+func (c *Context) RenderOK() error {
+	c.response.Write([]byte("ok\n"))
+	return nil
+}
+
 func (c *Context) Start(format string, args ...interface{}) {
 	c.logger = c.logger.Start()
 	c.logger.At("start").Logf(format, args...)
