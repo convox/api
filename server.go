@@ -5,7 +5,7 @@ import (
 	"net"
 	"net/http"
 
-	"github.com/convox/praxis/logger"
+	"github.com/convox/logger"
 )
 
 type Server struct {

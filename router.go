@@ -11,7 +11,6 @@ import (
 
 	"golang.org/x/net/websocket"
 
-	"github.com/convox/praxis/types"
 	"github.com/gorilla/mux"
 )
 
@@ -30,11 +29,6 @@ func (rt *Router) Route(method, path string, fn HandlerFunc) {
 	rt.Handle(path, rt.api(name, fn)).Methods(method)
 }
 
-func (rt *Router) Stream(name, path string, fn StreamFunc) {
-	rt.Handle(path, rt.streamWebsocket(name, fn)).Methods("GET").Headers("Upgrade", "websocket")
-	rt.Handle(path, rt.streamHTTP2(name, fn)).Methods("POST")
-}
-
 func (rt *Router) Use(mw Middleware) {
 	rt.Middleware = append(rt.Middleware, mw)
 }
@@ -45,12 +39,6 @@ func (rt *Router) UseHandlerFunc(fn http.HandlerFunc) {
 			fn(w, r)
 			return gn(w, r, c)
 		}
-	})
-}
-
-func (rt *Router) streamHTTP2(at string, fn StreamFunc) http.HandlerFunc {
-	return rt.api(at, func(w http.ResponseWriter, r *http.Request, c *Context) error {
-		return fn(types.Stream{Reader: r.Body, Writer: w}, c)
 	})
 }
 

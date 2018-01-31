@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/convox/praxis/logger"
+	"github.com/convox/logger"
 	"github.com/gorilla/mux"
 )
 
