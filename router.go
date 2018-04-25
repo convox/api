@@ -65,7 +65,7 @@ func (rt *Router) context(name string, w http.ResponseWriter, r *http.Request, c
 
 	c.context = context.WithValue(r.Context(), "request.id", id)
 	c.id = id
-	c.logger = rt.Server.Logger.Prepend("id=%s", id).Append("cn=%s", name)
+	c.logger = rt.Server.Logger.Append("id=%s cn=%s", id, name)
 	c.ws = conn
 
 	return c, nil
