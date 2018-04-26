@@ -4,10 +4,12 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"io"
+	"io/ioutil"
 	"net/http"
 	"os"
 
-	"github.com/convox/console2/logger"
+	"github.com/convox/logger"
 	"github.com/gorilla/mux"
 	"github.com/gorilla/sessions"
 	"github.com/gorilla/websocket"
@@ -40,6 +42,23 @@ func NewContext(w http.ResponseWriter, r *http.Request) *Context {
 		session:  sessions.NewCookieStore([]byte(SessionSecret)),
 		vars:     map[string]interface{}{},
 	}
+}
+
+func (c *Context) Body() io.ReadCloser {
+	return c.request.Body
+}
+
+func (c *Context) BodyJSON(v interface{}) error {
+	data, err := ioutil.ReadAll(c.Body())
+	if err != nil {
+		return err
+	}
+
+	if err := json.Unmarshal(data, v); err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func (c *Context) Context() context.Context {
